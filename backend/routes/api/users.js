@@ -33,7 +33,7 @@ router.post("/create", function(req, res, next) {
     .on("response", response => {
       console.log(response);
       const { personId } = response.body;
-      // tag personId to mongo
+      // TODO: tag personId to mongo
     })
     .on("error", error => {
       console.log(error);
@@ -71,8 +71,29 @@ router.post("/:userId/upload", (req, res, next) => {
     });
 });
 
-router.get("/train", (req, res, next) => {
-  // train person group
+router.post("/train", (req, res, next) => {
+  const getTrainingStatusUrl =
+    process.env.API_URL + `/persongroups/${personGroupId}/training`;
+  const startTrainingUrl =
+    process.env.API_URL + `/persongroups/${personGroupId}/train`;
+  const options = url => ({
+    url,
+    headers: {
+      "Ocp-Apim-Subscription-Key": subscriptionKey
+    }
+  });
+  // train person group if not already training
+  request.get(options(getTrainingStatusUrl)).on("response", response => {
+    console.log(response);
+    const { status } = response.body;
+    if (status === "running") {
+      res.send(response.body);
+      return;
+    }
+    request.post(options(startTrainingUrl)).on("response", resp => {
+      res.send(resp.body);
+    });
+  });
 });
 
 module.exports = router;
