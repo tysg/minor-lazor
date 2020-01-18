@@ -3,6 +3,7 @@ var router = express.Router();
 const upload = require("../../utils/storage").upload.single("photo");
 const uploadMultiple = require("../../utils/storage").upload.array("photo", 10);
 const { Photo } = require("../../models/photo");
+const { User } = require("../../models/user");
 
 function saveImage({ filename, path, event = "HacknRoll", originalname }) {
   return Photo.create({ filename, path, event, originalname });
@@ -38,6 +39,12 @@ router.post("/bulk", uploadMultiple, async (req, res) => {
     type: "success",
     uploaded: req.files.map(file => file.originalname)
   });
+});
+
+router.get("/myphotos/:userId", async (req, res) => {
+  const { userId } = req.params;
+  const currUser = await User.findById(userId);
+  
 });
 
 module.exports = router;
