@@ -1,6 +1,7 @@
 var express = require("express");
 var router = express.Router();
 var request = require("request");
+const axios = require("axios");
 
 const subscriptionKey = process.env.API_KEY1;
 const azureHeaders = (content_type = "application/json") => ({
@@ -125,8 +126,11 @@ function add_mugshot_to_azure(personId, photo, res, next) {
     body: "binary data here"
   };
   let answer;
-  request
-    .post(options)
+
+  return axios
+    .post(personAddFaceEndpoint, {
+      headers: azureHeaders("application/octet-stream")
+    })
     .on("response", response => {
       console.log(response);
     })
