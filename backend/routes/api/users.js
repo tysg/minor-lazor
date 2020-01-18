@@ -51,11 +51,12 @@ function upload_single_photo(req, res, next) {
 }
 
 async function create_user(req, res, next) {
-  console.log(req);
   const newUser = await User.create({
-    name: req.body.name,
-    email: req.body.email,
-    personalPhoto: req.body.mugshots
+    name: req.body.name || "Branson",
+    email: req.body.email || "branson@gmail.com",
+    personalPhoto:
+      req.body.mugshots ||
+      "0faf2d8f8344143e6bd9129b2d4c5082, 1b79125462345c7490952d81264f8c14"
   }).catch(err => {
     res.status(400).json({ error: "error creating user model: " + err });
   });
@@ -67,17 +68,20 @@ async function add_person_to_azure(user, res, next) {
   // add person to personGroup
   const newPersonEndpoint =
     process.env.API_URL + `/persongroups/${personGroupId}/persons`;
-
+  console.log(newPersonEndpoint);
   const newPerson = await axios
     .post(newPersonEndpoint, {
-      headers: azureHeaders(),
+      headers: {
+        ...azureHeaders()
+      },
       body: {
         // mongo user _id
         name: user._id
       }
     })
     .catch(err => {
-      res.send(error);
+      // console.log(err, "=====");
+      res.json({ message: "here", err });
     });
 
   if (!newPerson) return;
