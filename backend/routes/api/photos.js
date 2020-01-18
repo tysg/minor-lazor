@@ -18,6 +18,7 @@ router.post("/upload", upload.single("photo"), (req, res) => {
     "size": 146030
      */
     res.send(req.file);
+    // TODO: idenitfy faces from photo => identify people from persongroups
   } catch (err) {
     res.send(400);
   }
