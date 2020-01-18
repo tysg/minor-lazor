@@ -11,6 +11,9 @@ const UserSchema = new Schema({
     type: String,
     required: true
   },
+  azurePersonId: {
+    type: String,
+  },
   personalPhoto: [{ type: String, required: true }],
   eventPhotos: [{ type: mongoose.Schema.ObjectId, ref: "photo" }]
 });

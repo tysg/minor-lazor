@@ -3,6 +3,10 @@ var router = express.Router();
 var request = require("request");
 
 const subscriptionKey = process.env.API_KEY1;
+const azureHeaders = (content_type = "application/json") => ({
+  "Content-Type": content_type,
+  "Ocp-Apim-Subscription-Key": subscriptionKey
+});
 const personGroupId = "01";
 var { upload } = require("../../utils/storage");
 const { User } = require("../../models/user");
@@ -34,10 +38,17 @@ function show(req, res, next) {
   res.send("respond with a resource");
 }
 
-function create_user(req, res, next) {
-  // req = {name: string, email: string, mugshots: []string}
-  console.log(req.body);
+function upload_single_photo(req, res, next) {
+  const { mimetype, path } = req.file;
 
+  if (!imageTypes.includes(mimetype))
+    return res
+      .status(400)
+      .json({ error: "Please send an image, unsupported file type" });
+  res.json({ type: "success", path: [path] });
+}
+
+function create_user(req, res, next) {
   User.create(
     {
       name: req.body.name,
@@ -50,37 +61,22 @@ function create_user(req, res, next) {
           .status(400)
           .json({ error: "error creating user model: " + err });
       } else {
-        return res.send("created user: " + user.name);
+        return add_person_to_azure(user, res);
       }
     }
   );
 }
 
-function upload_single_photo(req, res, next) {
-  const { mimetype, path } = req.file;
-
-  if (!imageTypes.includes(mimetype))
-    return res
-      .status(400)
-      .json({ error: "Please send an image, unsupported file type" });
-  res.json({ type: "success", path: [path] });
-}
-
-router.post("/create", function(req, res, next) {
-  const person = req.body;
-  // const faceIds = res.send("created a user");
-  // get userId from mongo
+function add_person_to_azure(user, res, next) {
   // add person to personGroup
   const newPersonEndpoint =
     process.env.API_URL + `/persongroups/${personGroupId}/persons`;
   const options = {
     url: newPersonEndpoint,
-    headers: {
-      "Content-Type": "application/json",
-      "Ocp-Apim-Subscription-Key": subscriptionKey
-    },
+    headers: azureHeaders(),
     body: {
-      name: userId
+      // mongo user id
+      name: user.id
     }
   };
 
@@ -89,43 +85,56 @@ router.post("/create", function(req, res, next) {
     .on("response", response => {
       console.log(response);
       const { personId } = response.body;
-      // tag personId to mongo
+      // update mongo db with azure personId
+      User.updateOne(
+        { id: user.id },
+        { azurePersonId: personId },
+        (err, res_) => {
+          if (err) {
+            return res
+              .status(400)
+              .json({ error: "error updating Person ID" + err });
+          } else {
+            return add_all_mugshots_to_azure(user, personId, res);
+          }
+        }
+      );
     })
     .on("error", error => {
       console.log(error);
       res.send(error);
     });
-});
+}
 
-router.post("/:userId/upload", (req, res, next) => {
-  const { userId } = req.params;
-  // TODO: get personId from mongo
-  const { personId } = { personId: "placeholder" };
+function add_all_mugshots_to_azure(user, personId, res) {
+  for (path of user.personalPhoto) {
+    // TODO: @ding async attempt
+    add_mugshot_to_azure(personId, path, res);
+  }
+}
 
+function add_mugshot_to_azure(personId, photo, res, next) {
   // add face to person
   const personAddFaceEndpoint =
     process.env.API_URL +
     `/persongroups/${personGroupId}/persons/${personId}/persistedFaces`;
   const options = {
     url: personAddFaceEndpoint,
-    headers: {
-      "Content-Type": "application/json",
-      "Ocp-Apim-Subscription-Key": subscriptionKey
-    },
-    // TODO: placeholder
+    headers: azureHeaders("application/octet-stream"),
+    // TODO: @ding add photo
     body: "binary data here"
   };
+  let answer;
   request
     .post(options)
     .on("response", response => {
       console.log(response);
-      res.send(response.body);
     })
     .on("error", error => {
       console.log(error);
       res.send(error);
     });
-});
+}
 
 router.post("/train", (req, res, next) => {
   const getTrainingStatusUrl =
