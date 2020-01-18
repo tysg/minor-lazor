@@ -50,7 +50,9 @@ router.post("/bulk", uploadMultiple, async (req, res) => {
 router.get("/myphotos/:userId", async (req, res) => {
   const { userId } = req.params;
   const currUser = await User.findById(userId);
-  const userImages = currUser.images.map(filePath => fs.readFileSync(filePath));
+  const userImages = currUser.personalPhoto.map(filePath =>
+    fs.readFileSync(filePath)
+  );
   // Below is for zipping multiple files and sending for download
   // https://stackoverflow.com/questions/16215102/download-multiple-files-from-nodejs-server
 });

@@ -46,75 +46,66 @@ function upload_single_photo(req, res, next) {
     return res
       .status(400)
       .json({ error: "Please send an image, unsupported file type" });
+
   res.json({ type: "success", path: [path] });
 }
 
-function create_user(req, res, next) {
-  User.create(
-    {
-      name: req.body.name,
-      email: req.body.email,
-      personalPhoto: req.body.mugshots
-    },
-    (err, user) => {
-      if (err) {
-        return res
-          .status(400)
-          .json({ error: "error creating user model: " + err });
-      } else {
-        return add_person_to_azure(user, res);
-      }
-    }
-  );
+async function create_user(req, res, next) {
+  const newUser = await User.create({
+    name: req.body.name,
+    email: req.body.email,
+    personalPhoto: req.body.mugshots
+  }).catch(err => {
+    res.status(400).json({ error: "error creating user model: " + err });
+  });
+
+  if (newUser) add_person_to_azure(newUser, res, next);
 }
 
-function add_person_to_azure(user, res, next) {
+async function add_person_to_azure(user, res, next) {
   // add person to personGroup
   const newPersonEndpoint =
     process.env.API_URL + `/persongroups/${personGroupId}/persons`;
-  const options = {
-    url: newPersonEndpoint,
-    headers: azureHeaders(),
-    body: {
-      // mongo user id
-      name: user.id
-    }
-  };
 
-  request
-    .post(options)
-    .on("response", response => {
-      console.log(response);
-      const { personId } = response.body;
-      // update mongo db with azure personId
-      User.updateOne(
-        { id: user.id },
-        { azurePersonId: personId },
-        (err, res_) => {
-          if (err) {
-            return res
-              .status(400)
-              .json({ error: "error updating Person ID" + err });
-          } else {
-            return add_all_mugshots_to_azure(user, personId, res);
-          }
-        }
-      );
+  const newPerson = await axios
+    .post(newPersonEndpoint, {
+      headers: azureHeaders(),
+      body: {
+        // mongo user _id
+        name: user._id
+      }
     })
-    .on("error", error => {
-      console.log(error);
+    .catch(err => {
       res.send(error);
     });
-}
 
-function add_all_mugshots_to_azure(user, personId, res) {
-  for (path of user.personalPhoto) {
-    // TODO: @ding async attempt
-    add_mugshot_to_azure(personId, path, res);
+  if (!newPerson) return;
+
+  const { personId } = newPerson.body;
+
+  const azuredUser = await User.findByIdAndUpdate(user.id, {
+    azurePersonId: personId
+  }).catch(err => {
+    res.status(400).json({ error: "error updating Person ID" + err });
+  });
+
+  if (azuredUser) {
+    const { _id, email } = azuredUser;
+    add_all_mugshots_to_azure(azuredUser).then(resolved =>
+      res.json({ user: { _id, email }, message: "User successfully added" })
+    );
   }
 }
 
-function add_mugshot_to_azure(personId, photo, res, next) {
+function add_all_mugshots_to_azure(user) {
+  return Promise.all(
+    user.personalPhoto.map(path =>
+      add_mugshot_to_azure(user.azurePersonId, path)
+    )
+  );
+}
+
+function add_mugshot_to_azure(personId, photo) {
   // add face to person
   const personAddFaceEndpoint =
     process.env.API_URL +
@@ -125,19 +116,11 @@ function add_mugshot_to_azure(personId, photo, res, next) {
     // TODO: @ding add photo
     body: "binary data here"
   };
-  let answer;
 
-  return axios
-    .post(personAddFaceEndpoint, {
-      headers: azureHeaders("application/octet-stream")
-    })
-    .on("response", response => {
-      console.log(response);
-    })
-    .on("error", error => {
-      console.log(error);
-      res.send(error);
-    });
+  return axios.post(personAddFaceEndpoint, {
+    headers: azureHeaders("application/octet-stream"),
+    body: "binary data here"
+  });
 }
 
 router.post("/train", (req, res, next) => {
