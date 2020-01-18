@@ -5,6 +5,10 @@ const { Photo } = require("../../models/photo");
 
 const imageTypes = ["image/png", "image/jpg", "image/jpeg"];
 
+function saveImage({ filename, path, event, originalname }) {
+  return new Photo({ filename, path, event, originalname });
+}
+
 router.post("/upload", upload.single("photo"), (req, res) => {
   console.log("file saved");
   const {
@@ -44,9 +48,14 @@ router.post("/upload", upload.single("photo"), (req, res) => {
      */
 });
 
-router.post("/upload", upload.array("photo", 10), (req, res) => {
-  const { mimetype, filename, path, event = "HacknRoll" } = req.file;
-  console.log(mimetype);
+router.post("/bulk", upload.array("photo", 10), async (req, res) => {
+  // const { mimetype, filename, path, event = "HacknRoll" } = req.file;
+  console.log(req.files);
+  const rejected = [];
+  const promises = Promise.all(req.files.map(file => saveImage(file).catch()));
+  const resolved = await promises;
+
+  /* 
   if (!imageTypes.includes(mimetype))
     return res
       .status(400)
@@ -62,7 +71,7 @@ router.post("/upload", upload.array("photo", 10), (req, res) => {
     .catch(err => {
       console.log(err);
       return res.send(err);
-    });
+    }); */
   // struct of req.file
   /**
     "fieldname": "photo",
