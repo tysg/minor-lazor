@@ -33,7 +33,7 @@ router.post("/upload", upload.single("photo"), upload_single_photo);
  * POST a struct { name: string, email: string, personalPhoto: [path] }
  * On success, returns "created user: " + user.name
  */
-router.post("/create", express.json(), create_user);
+router.post("/create", create_user);
 
 function show(req, res, next) {
   res.send("respond with a resource");
@@ -51,6 +51,7 @@ function upload_single_photo(req, res, next) {
 }
 
 async function create_user(req, res, next) {
+  console.log(req);
   const newUser = await User.create({
     name: req.body.name,
     email: req.body.email,
@@ -110,16 +111,10 @@ function add_mugshot_to_azure(personId, photo) {
   const personAddFaceEndpoint =
     process.env.API_URL +
     `/persongroups/${personGroupId}/persons/${personId}/persistedFaces`;
-  const options = {
-    url: personAddFaceEndpoint,
-    headers: azureHeaders("application/octet-stream"),
-    // TODO: @ding add photo
-    body: "binary data here"
-  };
 
   return axios.post(personAddFaceEndpoint, {
     headers: azureHeaders("application/octet-stream"),
-    body: "binary data here"
+    body: "binary data here" // TODO replace stub
   });
 }
 
