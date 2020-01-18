@@ -1,24 +1,17 @@
 var express = require("express");
 var router = express.Router();
-var { upload } = require("../../utils/storage");
+const upload = require("../../utils/storage").upload.single("photo");
+const uploadMultiple = require("../../utils/storage").upload.array("photo", 10);
 const { Photo } = require("../../models/photo");
-
-const imageTypes = ["image/png", "image/jpg", "image/jpeg"];
 
 function saveImage({ filename, path, event = "HacknRoll", originalname }) {
   return Photo.create({ filename, path, event, originalname });
 }
 
-router.post("/upload", upload.single("photo"), (req, res) => {
+router.post("/upload", upload, (req, res) => {
+  console.log(req, "upload check");
   const { mimetype, originalname } = req.file;
-  console.log(mimetype);
-  if (!imageTypes.includes(mimetype))
-    return res
-      .status(400)
-      .json({ error: "Please send an image, unsupported file type" });
-
   saveImage(req.file)
-    .save()
     .then(result => {
       return res.json({ type: "success", uploaded: [originalname] });
     })
@@ -38,7 +31,7 @@ router.post("/upload", upload.single("photo"), (req, res) => {
      */
 });
 
-router.post("/bulk", upload.array("photo", 10), async (req, res) => {
+router.post("/bulk", uploadMultiple, async (req, res) => {
   const rejected = [];
   const promises = Promise.all(
     req.files.map(file =>

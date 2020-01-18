@@ -18,7 +18,8 @@ const PhotoSchema = new Schema({
   path: {
     type: String,
     required: true
-  }
+  },
+  user: { type: mongoose.Schema.ObjectId, ref: "user" }
 });
 
 module.exports = {
