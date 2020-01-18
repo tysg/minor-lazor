@@ -7,7 +7,13 @@ const imageTypes = ["image/png", "image/jpg", "image/jpeg"];
 
 router.post("/upload", upload.single("photo"), (req, res) => {
   console.log("file saved");
-  const { mimetype, filename, path, event = "HacknRoll", originalname } = req.file;
+  const {
+    mimetype,
+    filename,
+    path,
+    event = "HacknRoll",
+    originalname
+  } = req.file;
   console.log(mimetype);
   if (!imageTypes.includes(mimetype))
     return res
@@ -19,7 +25,7 @@ router.post("/upload", upload.single("photo"), (req, res) => {
   newPhoto
     .save()
     .then(result => {
-      return res.json({type:"success", uploaded:[originalname]});
+      return res.json({ type: "success", uploaded: [originalname] });
     })
     .catch(err => {
       console.log(err);
@@ -41,7 +47,6 @@ router.post("/upload", upload.single("photo"), (req, res) => {
 router.post("/upload", upload.array("photo", 10), (req, res) => {
   const { mimetype, filename, path, event = "HacknRoll" } = req.file;
   console.log(mimetype);
-  for 
   if (!imageTypes.includes(mimetype))
     return res
       .status(400)
