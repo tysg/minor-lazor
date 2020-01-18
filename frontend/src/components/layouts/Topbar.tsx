@@ -73,7 +73,7 @@ const Topbar: React.FC<Props> = ({ className, toggleSideBar, history, location }
           <IconButton className={classes.notificationsButton} onClick={handlePopoverClick}>
             <AccountCircle />
           </IconButton>
-          
+
           <Popover
             anchorEl={anchorEl}
             onClose={handlePopoverClose}

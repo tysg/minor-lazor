@@ -2,6 +2,7 @@ import { Action, AnyAction } from 'redux';
 import { ThunkAction, ThunkDispatch } from 'redux-thunk';
 
 import { types as notifications } from 'src/modules/notifications';
+import { types as photos } from 'src/modules/photos';
 import { types as users } from 'src/modules/users';
 
 export interface ThunkDispatchProps {
@@ -32,6 +33,7 @@ export type ApiPromise<D, E = {}> = Promise<ApiResponse<D, E>>;
 export interface AppState {
   loadingBar: any;
   notifications: notifications.NotificationsState;
+  photos: photos.PhotosState;
   users: users.UsersState;
 }
 

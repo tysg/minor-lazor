@@ -79,13 +79,7 @@ type Props<T extends object> = OwnProps<T>;
 /**
  * A SimpleForm displays a card containing a grid of form fields.
  */
-const SimpleForm: React.FC<Props<any>> = ({
-  initialValues,
-  formMetadata,
-  validationSchema,
-  onCancel,
-  onSubmit
-}) => {
+const SimpleForm: React.FC<Props<any>> = ({ initialValues, formMetadata, validationSchema, onCancel, onSubmit }) => {
   const classes = useStyles();
 
   const formKeys = Object.keys(formMetadata);
@@ -191,7 +185,6 @@ const SimpleForm: React.FC<Props<any>> = ({
                         );
                       })}
                     </Grid>
-                    <br />
                     <br />
                     <br />
                     <Grid>

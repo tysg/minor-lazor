@@ -3,11 +3,13 @@ import produce from 'immer';
 import * as types from './types';
 
 const initialState: types.NotificationsState = {
-  notifications: [{
-    key: 0,
-    content: 'Welcome to Facer!',
-    variant: 'success'
-  }]
+  notifications: [
+    {
+      key: 0,
+      content: 'Welcome to Facer!',
+      variant: 'success'
+    }
+  ]
 };
 
 const notificationsReducer = produce((draft: types.NotificationsState, action: types.NotificationActionTypes) => {

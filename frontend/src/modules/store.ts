@@ -5,11 +5,13 @@ import { loadingBarReducer } from 'react-redux-loading-bar';
 
 import { AppState } from 'src/types';
 import notificationsReducer from './notifications';
+import photosReducer from './photos';
 import usersReducer from './users';
 
 const rootReducer: Reducer<AppState> = combineReducers<AppState>({
   loadingBar: loadingBarReducer,
   notifications: notificationsReducer,
+  photos: photosReducer,
   users: usersReducer
 });
 

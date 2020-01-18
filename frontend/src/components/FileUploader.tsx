@@ -42,7 +42,7 @@ const dropZoneStyle = {
   baseStyle: {
     flex: 1,
     display: 'flex',
-    height: '10vh',
+    height: '20vh',
     flexDirection: 'column' as FlexDirectionProperty,
     alignItems: 'center',
     justifyContent: 'center',

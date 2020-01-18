@@ -17,9 +17,7 @@ export interface SaveUserAction {
   data: UserData;
 }
 
-export type UsersActionTypes =
-  | AddUserAction
-  | SaveUserAction;
+export type UsersActionTypes = AddUserAction | SaveUserAction;
 
 // state types
 
