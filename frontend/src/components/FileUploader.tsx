@@ -101,7 +101,13 @@ const FileUploader: React.FC<OwnProps> = (props) => {
   });
 
   const style = React.useMemo(
-    () => dropZoneStyle.baseStyle,
+    () => ({
+      ...dropZoneStyle.baseStyle,
+      ...(isDragActive ? dropZoneStyle.activeStyle : {}),
+      ...(isDragAccept ? dropZoneStyle.acceptStyle : {}),
+      ...(isDragReject ? dropZoneStyle.rejectStyle : {}),
+      ...(isFocused ? dropZoneStyle.activeStyle : {})
+    }),
     [isDragActive, isDragAccept, isDragReject, isFocused]
   );
 

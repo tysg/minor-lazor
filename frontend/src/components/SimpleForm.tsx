@@ -71,7 +71,7 @@ interface OwnProps<T extends object> {
   onCancel: () => any;
   // The function to be called when the submit button is pressed.
   // The function should resolve to a boolean that determines if the form is to be reset.
-  onSubmit?: (newValues: T) => Promise<boolean>;
+  onSubmit: (newValues: T) => Promise<boolean>;
 }
 
 type Props<T extends object> = OwnProps<T>;
@@ -98,7 +98,7 @@ const SimpleForm: React.FC<Props<any>> = ({
           validationSchema={validationSchema}
           onSubmit={(newValues, actions) => {
             actions.setSubmitting(true);
-            onSubmit!(newValues)
+            onSubmit(newValues)
               .then((bool) => {
                 if (bool) {
                   actions.setSubmitting(false);
@@ -191,9 +191,11 @@ const SimpleForm: React.FC<Props<any>> = ({
                         );
                       })}
                     </Grid>
-                    <Divider />
+                    <br />
+                    <br />
+                    <br />
                     <Grid>
-                      <FileUploader fieldname='request_letter' fieldnameHelper='request_letter_helper' />
+                      <FileUploader fieldname='file' fieldnameHelper='file_helper' />
                     </Grid>
                   </Grid>
                   {/* Form buttons */}

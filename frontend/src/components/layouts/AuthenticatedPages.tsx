@@ -1,11 +1,10 @@
 import * as React from 'react';
-import { useSelector } from 'react-redux';
 import { Route, RouteComponentProps, Switch, withRouter } from 'react-router-dom';
 
+import HomeIndex from 'src/modules/HomeIndex';
+import UserNew from 'src/modules/users/components/NewUserForm';
 import AppMainLayout from './AppMainLayout';
 import ErrorBoundary from './ErrorBoundary';
-import HomeIndex from './../../modules/HomeIndex';
-import UserNew from './../../modules/NewUserForm';
 
 type Props = RouteComponentProps;
 

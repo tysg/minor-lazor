@@ -1,7 +1,7 @@
 export interface UserData {
   id: number;
   full_name: string;
-  avatar_url?: string;
   email: string;
+  photo_url?: string;
   created_at?: string;
 }

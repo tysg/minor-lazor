@@ -3,8 +3,10 @@ import { useDispatch } from 'react-redux';
 import { RouteComponentProps, withRouter } from 'react-router-dom';
 import * as Yup from 'yup';
 
-import SimpleForm, { FormMetadataType } from './../components/SimpleForm';
-import { UserData } from './../types/users';
+import SimpleForm, { FormMetadataType } from 'src/components/SimpleForm';
+import { UserData } from 'src/types/users';
+import { handleApiRequest } from 'src/utils/ui';
+import { addUser } from '../operations';
 
 type Props = RouteComponentProps;
 
@@ -26,7 +28,8 @@ const NewUserForm: React.FC<Props> = ({ history }) => {
     full_name: Yup.string().required('Name is required'),
     email: Yup.string()
       .email('Enter a valid email')
-      .required('Email is required')
+      .required('Email is required'),
+    file_helper: Yup.string().required()
   });
 
   return (
@@ -35,6 +38,12 @@ const NewUserForm: React.FC<Props> = ({ history }) => {
       formMetadata={formMetadata}
       validationSchema={validationSchema}
       onCancel={() => history.push('/users')}
+      onSubmit={(newValues: UserData) => {
+        return handleApiRequest(dispatch, dispatch(addUser(newValues))).then((res) => {
+          history.push(`${res.data.id}`);
+          return false;
+        });
+      }}
     />
   );
 };

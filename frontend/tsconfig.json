@@ -1,8 +1,8 @@
 {
   "compilerOptions": {
     "baseUrl": ".",
-    "target": "es2018",
-    "lib": ["es2018", "dom"],
+    "target": "es6",
+    "lib": ["es6", "dom"],
     "experimentalDecorators": true,
     "allowJs": true,
     "skipLibCheck": true,
@@ -10,7 +10,7 @@
     "allowSyntheticDefaultImports": true,
     "strict": true,
     "forceConsistentCasingInFileNames": true,
-    "module": "es2015",
+    "module": "es6",
     "moduleResolution": "node",
     "resolveJsonModule": true,
     "isolatedModules": true,

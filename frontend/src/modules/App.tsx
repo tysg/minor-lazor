@@ -7,8 +7,9 @@ import { Provider } from 'react-redux';
 import LoadingBar from 'react-redux-loading-bar';
 import { BrowserRouter, Route, Switch } from 'react-router-dom';
 
-import AuthenticatedPages from './../components/layouts/AuthenticatedPages';
-import theme from './../theme';
+import AuthenticatedPages from 'src/components/layouts/AuthenticatedPages';
+import Notifier from 'src/modules/notifications/components/Notifier';
+import theme from 'src/theme';
 import './App.css';
 import configureStore from './store';
 
@@ -30,6 +31,7 @@ const App: React.FC<{}> = () => {
           <SnackbarProvider maxSnack={3}>
             <>
               <CssBaseline />
+              <Notifier />
               <LoadingBar style={loadingBarStyle} updateTime={150} />
               <BrowserRouter>
                 <Switch>
