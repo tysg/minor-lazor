@@ -19,16 +19,6 @@ router.post("/upload", upload, (req, res) => {
       console.log(err);
       return res.send(err);
     });
-  /**
-    "fieldname": "photo",
-    "originalname": "Aca.jpg",
-    "encoding": "7bit",
-    "mimetype": "image/jpeg",
-    "destination": "uploads/",
-    "filename": "ec73cc1c2ee4f1d9a3d212a0c66be586",
-    "path": "uploads\\ec73cc1c2ee4f1d9a3d212a0c66be586",
-    "size": 146030
-     */
 });
 
 router.post("/bulk", uploadMultiple, async (req, res) => {
