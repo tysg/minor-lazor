@@ -1,7 +1,8 @@
 import axios, { AxiosError, AxiosPromise } from 'axios';
 
-import { ApiPromise, ApiResponse, StatusMessageType } from '../types';
+import { ApiPromise, ApiResponse, StatusMessageType } from 'src/types';
 import { csrfToken as initialToken } from './server-context';
+import { BACKEND_URL } from './../constants';
 
 const DEFAULT_API_RESPONSE: ApiResponse<{}> = Object.freeze({
   code: -1,
@@ -16,7 +17,7 @@ const DEFAULT_API_RESPONSE: ApiResponse<{}> = Object.freeze({
 });
 
 const client = axios.create({
-  baseURL: '/api/v1',
+  baseURL: `${BACKEND_URL}/api/v1`,
   timeout: 30_000,
   withCredentials: true
 });
