@@ -4,11 +4,67 @@ var request = require("request");
 
 const subscriptionKey = process.env.API_KEY1;
 const personGroupId = "01";
+var { upload } = require("../../utils/storage");
+const { User } = require("../../models/user");
 
-/* GET users listing. */
-router.get("/", function(req, res, next) {
+const imageTypes = ["image/png", "image/jpg", "image/jpeg"];
+
+router.get("/", show);
+
+/**
+ * Uploads a photo to local.
+ *
+ * POST a photo in multipart/webform
+ * On success, returns
+ * { type: "success",
+ *   path: [path]
+ * }, where path is the location of the photo
+ */
+router.post("/upload", upload.single("photo"), upload_single_photo);
+
+/**
+ * Creates a participant with personal information and an array of mugshots
+ *
+ * POST a struct { name: string, email: string, personalPhoto: [path] }
+ * On success, returns "created user: " + user.name
+ */
+router.post("/create", express.json(), create_user);
+
+function show(req, res, next) {
   res.send("respond with a resource");
-});
+}
+
+function create_user(req, res, next) {
+  // req = {name: string, email: string, mugshots: []string}
+  console.log(req.body);
+
+  User.create(
+    {
+      name: req.body.name,
+      email: req.body.email,
+      personalPhoto: req.body.mugshots
+    },
+    (err, user) => {
+      if (err) {
+        return res
+          .status(400)
+          .json({ error: "error creating user model: " + err });
+      } else {
+        return res.send("created user: " + user.name);
+      }
+    }
+  );
+}
+
+function upload_single_photo(req, res, next) {
+  const { mimetype, path } = req.file;
+
+  if (!imageTypes.includes(mimetype))
+    return res
+      .status(400)
+      .json({ error: "Please send an image, unsupported file type" });
+  res.json({ type: "success", path: [path] });
+}
 
 router.post("/create", function(req, res, next) {
   const person = req.body;
@@ -33,7 +89,7 @@ router.post("/create", function(req, res, next) {
     .on("response", response => {
       console.log(response);
       const { personId } = response.body;
-      // TODO: tag personId to mongo
+      // tag personId to mongo
     })
     .on("error", error => {
       console.log(error);
