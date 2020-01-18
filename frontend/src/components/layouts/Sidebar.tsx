@@ -128,7 +128,7 @@ const Sidebar: React.FC<Props> = (props) => {
     <nav className={clsx(classes.root, props.className)}>
       <div className={classes.logoWrapper}>
         <Link className={classes.logoLink} to='/'>
-          <Typography>Facer</Typography>
+          <img alt='facer' className={classes.logoImage} src='/facer.png' />
         </Link>
       </div>
 
