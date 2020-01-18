@@ -1,6 +1,7 @@
 import { CssBaseline } from '@material-ui/core';
 import { MuiThemeProvider } from '@material-ui/core/styles';
 import { StylesProvider } from '@material-ui/styles';
+import { SnackbarProvider } from 'notistack';
 import React from 'react';
 import { Provider } from 'react-redux';
 import LoadingBar from 'react-redux-loading-bar';
@@ -26,15 +27,17 @@ const App: React.FC<{}> = () => {
     <Provider store={store}>
       <StylesProvider>
         <MuiThemeProvider theme={theme}>
-          <>
-            <CssBaseline />
-            <LoadingBar style={loadingBarStyle} updateTime={150} />
-            <BrowserRouter>
-              <Switch>
-                <Route path='/' component={AuthenticatedPages} />
-              </Switch>
-            </BrowserRouter>
-          </>
+          <SnackbarProvider maxSnack={3}>
+            <>
+              <CssBaseline />
+              <LoadingBar style={loadingBarStyle} updateTime={150} />
+              <BrowserRouter>
+                <Switch>
+                  <Route path='/' component={AuthenticatedPages} />
+                </Switch>
+              </BrowserRouter>
+            </>
+          </SnackbarProvider>
         </MuiThemeProvider>
       </StylesProvider>
     </Provider>

@@ -1,6 +1,7 @@
 import { Divider, List, ListItem, ListItemIcon, ListItemText, Typography } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
 import Home from '@material-ui/icons/Home';
+import User from '@material-ui/icons/SupervisedUserCircle';
 import clsx from 'clsx';
 import * as React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
@@ -127,7 +128,7 @@ const Sidebar: React.FC<Props> = (props) => {
     <nav className={clsx(classes.root, props.className)}>
       <div className={classes.logoWrapper}>
         <Link className={classes.logoLink} to='/'>
-          <Typography>Home</Typography>
+          <Typography>Facer</Typography>
         </Link>
       </div>
 
@@ -135,6 +136,7 @@ const Sidebar: React.FC<Props> = (props) => {
 
       <List component='div' disablePadding>
         <SideButton url='/' text='Home' icon={<Home />} />
+        <SideButton url='/users' text='New Users' icon={<User />} />
         <Divider />
       </List>
     </nav>
