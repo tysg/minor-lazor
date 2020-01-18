@@ -1,7 +1,7 @@
 var express = require("express");
 var router = express.Router();
 var multer = require("multer");
-var upload = multer({ dest: "uploads/" });
+var upload = require("../../utils/storage");
 
 router.post("/upload", upload.single("photo"), (req, res) => {
   try {
@@ -25,7 +25,6 @@ router.post("/upload", upload.single("photo"), (req, res) => {
 
 router.get("/user/:userId", (req, res) => {
   const { userId } = req.params;
-  
 });
 
 module.exports = router;

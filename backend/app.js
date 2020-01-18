@@ -8,6 +8,8 @@ const cors = require("cors");
 
 const { users, photos } = require("./routes");
 
+const Grid = require("gridfs-stream");
+
 var app = express();
 
 app.use(
@@ -28,6 +30,14 @@ var conn = mongoose
   .connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true })
   .then(() => console.log("MongoDB successfully connected"))
   .catch(err => console.log(err));
+
+let gfs;
+
+// mongoose.connection.once("open", () => {
+//   gfs = Grid(conn.db, mongoose.mongo);
+//   gfs.collection("uploads");
+//   console.log("Connection Successful");
+// });
 
 mongoose.set("useFindAndModify", false);
 
