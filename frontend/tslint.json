@@ -1,0 +1,28 @@
+{
+    "extends": ["tslint:recommended", "tslint-react", "tslint-config-prettier"],
+    "rules": {
+      "indent": [true, "spaces", 2],
+      "interface-name": false,
+      "jsx-alignment": false,
+      "jsx-boolean-value": [true, "never"],
+      "jsx-no-lambda": false,
+      "jsx-no-multiline-js": false,
+      "jsx-wrap-multiline": false,
+      "max-classes-per-file": false,
+      "no-big-function": false,
+      "no-console": false,
+      "no-duplicate-string": false,
+      "ordered-imports": false,
+      "object-literal-sort-keys": false,
+      "quotemark": [true, "single", "avoid-escape"],
+      "trailing-comma": false
+    },
+    "linterOptions": {
+      "exclude": [
+        "config/**/*.js",
+        "node_modules/**/*.ts",
+        "src/components/academy/game/**/*.js"
+      ]
+    },
+    "defaultSeverity": "warning"
+  }
