@@ -5,15 +5,31 @@ const uploadMultiple = require("../../utils/storage").upload.array("photo", 10);
 const { Photo } = require("../../models/photo");
 const { User } = require("../../models/user");
 const fs = require("fs");
+const { FaceModels } = require("@azure/cognitiveservices-face");
+const faceClient = require("../../common/faceClient");
 
 function saveImage({ filename, path, event = "HacknRoll", originalname }) {
   return Photo.create({ filename, path, event, originalname });
+}
+
+function detectFaces(imageStream) {
+  const options = {
+    detectionModel: "detection_02",
+    recognitionModel: "recognition_02"
+  };
+  return faceClient.face.detectWithStream(imageStream, options);
 }
 
 router.post("/upload", upload, (req, res) => {
   console.log(req, "upload check");
   const { mimetype, originalname } = req.file;
   saveImage(req.file)
+    .then(result => {
+      const buffer = fs.readFileSync(req.file.path);
+      detectFaces(buffer).then(faces => {
+        console.log(faces);
+      });
+    })
     .then(result => {
       return res.json({ type: "success", uploaded: [originalname] });
     })
