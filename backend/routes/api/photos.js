@@ -12,6 +12,7 @@ function saveImage({ filename, path, event = "HacknRoll", originalname }) {
   return Photo.create({ filename, path, event, originalname });
 }
 
+// return detectFace Promise
 function detectFaces(imageStream) {
   const options = {
     detectionModel: "detection_02",
@@ -27,6 +28,7 @@ router.post("/upload", upload, (req, res) => {
     .then(result => {
       const buffer = fs.readFileSync(req.file.path);
       detectFaces(buffer).then(faces => {
+        // TODO: match teh return data to user in mongo
         console.log(faces);
       });
     })
