@@ -1,7 +1,6 @@
 var express = require("express");
 var router = express.Router();
 const { promisify } = require("util");
-// const axios = require("axios");
 const rp = promisify(require("request").post);
 const fs = require("fs");
 
@@ -31,15 +30,14 @@ router.post("/upload", upload.single("photo"), upload_single_photo);
  * POST a struct { name: string, email: string, personalPhoto: [path] }
  * On success, returns "created user: " + user.name
  */
-router.post("/create", create_user);
+router.post("/", upload.single('user[file]'), create_user);
 
-// TODO
 /**
  * Gets the path to the photos associated with the user id.
  *
  * On success, returns the User struct
  */
-router.get("/photos/:id", show_user);
+router.get("/:id", show_user);
 
 function show_user(req, res, next) {
   User.findById(req.params.id).exec((err, docs) => {
@@ -70,7 +68,7 @@ function upload_single_photo(req, res, next) {
 
 async function create_user(req, res, next) {
   const newUser = await User.create({
-    name: req.body.name || "Branson",
+    name: req.body.full_name || "Branson",
     email: req.body.email || "branson@gmail.com",
     personalPhoto: req.body.mugshots || [
       "0faf2d8f8344143e6bd9129b2d4c5082",
@@ -152,7 +150,7 @@ function add_mugshot_to_azure(personId, path, expressRes) {
   });
 }
 
-router.post("/train", async (req, res, next) => {
+router.post("/training", async (req, res, next) => {
   // train person group if not already training
   client.personGroup.train(personGroupId);
   let { status } = await client.personGroup.getTrainingStatus(personGroupId);

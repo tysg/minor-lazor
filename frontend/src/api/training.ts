@@ -11,7 +11,7 @@ class TrainingAPI extends BaseAPI {
   }
 
   protected getUrl() {
-    return '/training';
+    return '/users/training';
   }
 }
 

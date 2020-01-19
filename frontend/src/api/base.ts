@@ -17,9 +17,9 @@ const DEFAULT_API_RESPONSE: ApiResponse<{}> = Object.freeze({
 });
 
 const client = axios.create({
-  baseURL: `${BACKEND_URL}/api/v1`,
+  baseURL: `${BACKEND_URL}/api`,
   timeout: 30_000,
-  withCredentials: true
+  withCredentials: false
 });
 
 class BaseAPI {
@@ -89,7 +89,7 @@ class BaseAPI {
         headers: {
           // Content-Type is set to undefined for the XHR to be sent as a multipart request,
           // so binary data can be sent successfully to the backend.
-          'Content-Type': undefined,
+          'Content-Type': 'multipart/form-data',
           'Accept': 'application/json',
           'X-CSRF-Token': BaseAPI.csrfToken
         }

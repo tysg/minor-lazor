@@ -8,16 +8,17 @@ const cors = require("cors");
 
 const { users, photos } = require("./routes");
 
-var app = express();
+const app = express();
+app.use(cors());
 
-
+// for parsing application/json
 app.use(bodyParser.json());
+// for parsing application/xwww-
 app.use(
   bodyParser.urlencoded({
     extended: true
   })
 );
-app.use(cors());
 
 // Routes
 app.use("/api/users", users);
@@ -27,10 +28,10 @@ app.use("/api/photos", photos);
 app.use("/uploads", express.static(__dirname + "/uploads"));
 
 app.use(function (err, req, res, next) {
-
   // set locals, only providing error in development
   // res.locals.message = err.message;
   // res.locals.error = req.app.get("env") === "development" ? err : {};
+  console.log(err);
   return res.status(err.status || 500).json(err);
 });
 
@@ -44,8 +45,8 @@ mongoose.set("useFindAndModify", false);
 
 app.get("/", (req, res) => res.send("Hello World!"));
 
-app.listen(process.env.PORT || 5000, () =>
-  console.log(`App listening to port ${process.env.PORT}`)
+app.listen(process.env.PORT || 3000, () =>
+  console.log(`App listening to port ${process.env.PORT || 3000}`)
 );
 
 module.exports = { app };
