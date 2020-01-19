@@ -16,7 +16,8 @@ const NewUserForm: React.FC<Props> = ({ history }) => {
   const values: Partial<UserData> = {
     id: 0,
     full_name: '',
-    email: ''
+    email: '',
+    file_helper: ''
   };
 
   const formMetadata: FormMetadataType<UserData> = {

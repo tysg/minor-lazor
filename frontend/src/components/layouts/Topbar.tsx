@@ -70,9 +70,9 @@ const Topbar: React.FC<Props> = ({ className, toggleSideBar, history, location }
             <Menu />
           </IconButton>
 
-          <IconButton className={classes.notificationsButton} onClick={handlePopoverClick}>
+          {/* <IconButton className={classes.notificationsButton} onClick={handlePopoverClick}>
             <AccountCircle />
-          </IconButton>
+          </IconButton> */}
 
           <Popover
             anchorEl={anchorEl}

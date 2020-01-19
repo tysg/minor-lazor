@@ -1,6 +1,6 @@
 import * as colors from '@material-ui/core/colors';
 
-import { black, white } from './colors';
+import { black, white, blue, green } from './colors';
 
 const palette = {
   common: {
@@ -10,7 +10,7 @@ const palette = {
   },
   primary: {
     contrastText: white,
-    main: '#0767DB',
+    main: blue,
     light: '#F6F9FD',
     dark: '#0B48A0'
   },
