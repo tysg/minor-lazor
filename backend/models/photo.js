@@ -7,12 +7,21 @@ const PhotoSchema = new Schema({
     type: String,
     required: true
   },
-  filePath: {
+  filename: {
     type: String,
     required: true
-  }
+  },
+  originalname: {
+    type: String,
+    required: true
+  },
+  path: {
+    type: String,
+    required: true
+  },
+  user: { type: mongoose.Schema.ObjectId, ref: "user" }
 });
 
 module.exports = {
-  Photo: mongoose.model("photo", PhotoSchema)
+  Photo: mongoose.model("photos", PhotoSchema)
 };

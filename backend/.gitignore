@@ -1,3 +1,6 @@
+#.env
+
+/uploads
 
 # node_modules
 /node_modules
@@ -29,3 +32,5 @@ coverage
 # Benchmarking
 benchmarks/graphs
 
+# Secrets
+.env

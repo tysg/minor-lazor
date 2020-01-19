@@ -1,26 +1,24 @@
-const { mongoURI } = require("../config");
-const GridFsStorage = require("multer-gridfs-storage");
 const multer = require("multer");
 
-const storage = new GridFsStorage({
-  url: mongoURI,
-  file: (req, file) => {
-    return new Promise((resolve, reject) => {
-      // crypto.randomBytes(16, (err, buf) => {
-      //   if (err) {
-      //     return reject(err);
-      //   }
-      const filename = file.originalname;
-      const fileInfo = {
-        filename: filename,
-        bucketName: "uploads"
-      };
-      resolve(fileInfo);
-      // });
-    });
+const accepted = ["image/png", "image/jpg", "image/jpeg"];
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, "./uploads");
+  },
+  filename: (req, file, cb) => {
+    cb(null, `${file.fieldname}_${+new Date()}.jpg`);
   }
 });
 
-const upload = multer({ storage });
+const upload = multer({
+  dest: "uploads/",
+  fileFilter: (req, file, cb) => {
+    if (!accepted.includes(file.mimetype)) {
+      return cb(new Error("Only images are allowed"));
+    }
+    cb(null, true);
+  }
+});
 
-module.exports = upload;
+module.exports = { upload };
