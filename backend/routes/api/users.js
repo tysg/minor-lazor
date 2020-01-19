@@ -1,7 +1,7 @@
 var express = require("express");
 var router = express.Router();
 const { promisify } = require("util");
-const axios = require("axios");
+// const axios = require("axios");
 const rp = promisify(require("request").post);
 const fs = require("fs");
 
@@ -99,38 +99,6 @@ async function add_person_to_azure(user, res, next) {
   if (!noError) return;
 
   await add_all_mugshots_to_azure(user, azurePersonId, res);
-
-  // const newPerson = await axios
-  //   .post(newPersonEndpoint, {
-  //     body: {
-  //       // mongo user _id
-  //       name: user._id
-  //     },
-  //     headers: {
-  //       ...azureHeaders()
-  //     }
-  //   })
-  //   .catch(err => {
-  //     // console.log(err, "=====");
-  //     res.json({ message: "here", err });
-  //   });
-
-  // if (!newPerson) return;
-
-  // const { personId } = newPerson.body;
-
-  // const azuredUser = await User.findByIdAndUpdate(user.id, {
-  //   azurePersonId: personId
-  // }).catch(err => {
-  //   res.status(400).json({ error: "error updating Person ID" + err });
-  // });
-
-  // if (azuredUser) {
-  //   const { _id, email } = azuredUser;
-  //   add_all_mugshots_to_azure(azuredUser).then(resolved =>
-  //     res.json({ user: { _id, email }, message: "User successfully added" })
-  //   );
-  // }
 }
 
 function add_all_mugshots_to_azure(user, azurePersonId, expressRes) {
