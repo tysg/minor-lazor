@@ -2,7 +2,7 @@ var express = require("express");
 var router = express.Router();
 const { promisify } = require("util");
 const axios = require("axios");
-const request = promisify(require("request"));
+const rp = promisify(require("request").post);
 
 const subscriptionKey = process.env.API_KEY1;
 const azureHeaders = (content_type = "application/json") => ({
@@ -69,21 +69,31 @@ async function add_person_to_azure(user, res, next) {
   // add person to personGroup
   const newPersonEndpoint =
     process.env.API_URL + `/persongroups/${personGroupId}/persons`;
-  console.log(newPersonEndpoint);
+  console.log(newPersonEndpoint, user._id);
 
-  const azuredPerson = request
-    .post(options)
+  const options = {
+    url: newPersonEndpoint,
+    headers: azureHeaders(),
+    data: {
+      name: `${user._id}`,
+      userData: "test person",
+      recognitionModel: "recognition_02"
+    }
+  };
+
+  const azuredPerson = rp(options)
     .then(response => {
-      console.log(response);
       const { personId } = response.body;
+      console.log(personId);
       return response.body;
     })
     .catch(err => {
       res.send(err);
     });
+
   if (!azuredPerson) return;
 
-  User.findByIdAndUpdate(user._id, { azurePersonId: personId })
+  User.findByIdAndUpdate(user._id, { azurePersonId: azuredPerson.personId })
     .then(success => {
       return add_all_mugshots_to_azure(user, personId, res);
     })
