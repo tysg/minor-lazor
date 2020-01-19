@@ -14,7 +14,7 @@ function saveImage({ filename, path, event = "HacknRoll", originalname }) {
 
 /**
  * Detects and recognises faces in a image stream.
- * @param {string} path 
+ * @param {string} path
  * @returns an array of user ids
  */
 function detectAndRecognizeFaces(imageStream) {
@@ -22,7 +22,9 @@ function detectAndRecognizeFaces(imageStream) {
     detectionModel: "detection_02",
     recognitionModel: "recognition_02"
   };
-  var faces = Promise.all(faceClient.face.detectWithStream(imageStream, options));
+  var faces = Promise.all(
+    faceClient.face.detectWithStream(imageStream, options)
+  );
 
   var faceIds = faces.map(face => face.faceId);
   var results = Promise.all(client.face.identify(faceIds, personGroupId));
@@ -52,7 +54,6 @@ router.post("/upload", upload, (req, res) => {
       return res.send(err);
     });
 });
-
 
 router.post("/bulk", uploadMultiple, async (req, res) => {
   const rejected = [];
@@ -95,16 +96,14 @@ function update_all_users_event_photo(photo_id, user_ids) {
   }
 }
 
-
 function append_user_event_photos(user_id, photo_id) {
-  User.findOne({ _id: user_id })
-    .exec((err, docs) => {
-      if (err) {
-        console.log(err)
-      } else {
-        return update_single_user_event_photos_field(docs, photo_id);
-      }
-    })
+  User.findOne({ _id: user_id }).exec((err, docs) => {
+    if (err) {
+      console.log(err);
+    } else {
+      return update_single_user_event_photos_field(docs, photo_id);
+    }
+  });
 }
 
 function update_single_user_event_photos_field(user, photo_id) {
@@ -112,14 +111,15 @@ function update_single_user_event_photos_field(user, photo_id) {
   if (!user.eventPhotos.includes(photo_id)) {
     user.eventPhotos.push(photo_id);
   }
-  Users.update({ _id: user._id }, { eventPhotos: user.eventPhotos }).exec((err, docs) => {
-    if (err) {
-      console.log(err);
-    } else {
-      console.log("updated: " + user._id);
+  Users.update({ _id: user._id }, { eventPhotos: user.eventPhotos }).exec(
+    (err, docs) => {
+      if (err) {
+        console.log(err);
+      } else {
+        console.log("updated: " + user._id);
+      }
     }
-  });
+  );
 }
-
 
 module.exports = router;

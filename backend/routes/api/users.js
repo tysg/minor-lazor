@@ -1,12 +1,16 @@
 var express = require("express");
 var router = express.Router();
-var request = require("request");
-const axios = require("axios");
+const { promisify } = require("util");
+// const axios = require("axios");
+const rp = promisify(require("request").post);
+const fs = require("fs");
 
 var { upload } = require("../../utils/storage");
 const { User } = require("../../models/user");
+const client = require("../../common/faceClient");
 
 const imageTypes = ["image/png", "image/jpg", "image/jpeg"];
+const personGroupId = "01";
 
 router.get("/", show);
 
@@ -29,7 +33,6 @@ router.post("/upload", upload.single("photo"), upload_single_photo);
  */
 router.post("/create", create_user);
 
-
 // TODO
 /**
  * Gets the path to the photos associated with the user id.
@@ -38,16 +41,16 @@ router.post("/create", create_user);
  */
 router.get("/photos/:id", show_user);
 
-
 function show_user(req, res, next) {
   User.findById(req.params.id).exec((err, docs) => {
     if (err) {
-      res.status(400).json({ error: "error finding user id: " + req.params.id });
+      res
+        .status(400)
+        .json({ error: "error finding user id: " + req.params.id });
     } else {
       res.json(docs);
     }
-  })
-
+  });
 }
 
 function show(req, res, next) {
@@ -66,14 +69,19 @@ function upload_single_photo(req, res, next) {
 }
 
 async function create_user(req, res, next) {
-  console.log(req);
   const newUser = await User.create({
-    name: req.body.name,
-    email: req.body.email,
-    personalPhoto: req.body.mugshots
-  }).catch(err => {
-    res.status(400).json({ error: "error creating user model: " + err });
-  });
+    name: req.body.name || "Branson",
+    email: req.body.email || "branson@gmail.com",
+    personalPhoto: req.body.mugshots || [
+      "0faf2d8f8344143e6bd9129b2d4c5082",
+      "1b79125462345c7490952d81264f8c14"
+    ]
+  }).catch(
+    err => {
+      res.status(400).json({ error: "error creating user model: " + err });
+    },
+    { plain: true }
+  );
 
   if (newUser) add_person_to_azure(newUser, res, next);
 }
@@ -83,79 +91,76 @@ async function add_person_to_azure(user, res, next) {
   const newPersonEndpoint =
     process.env.API_URL + `/persongroups/${personGroupId}/persons`;
 
-  const newPerson = await axios
-    .post(newPersonEndpoint, {
-      headers: azureHeaders(),
-      body: {
-        // mongo user _id
-        name: user._id
-      }
+  const options = {
+    url: newPersonEndpoint,
+    headers: azureHeaders(),
+    body: JSON.stringify({
+      name: user._id,
+      userData: "test person",
+      recognitionModel: "recognition_02"
+    })
+  };
+
+  const azurePersonId = await rp(options)
+    .then(response => {
+      const { personId } = JSON.parse(response.body);
+      return personId;
     })
     .catch(err => {
-      res.send(error);
+      res.send(err);
     });
 
-  if (!newPerson) return;
+  if (!azurePersonId) return;
 
-  const { personId } = newPerson.body;
-
-  const azuredUser = await User.findByIdAndUpdate(user.id, {
-    azurePersonId: personId
+  const noError = await User.findByIdAndUpdate(user._id, {
+    azurePersonId: azurePersonId
   }).catch(err => {
-    res.status(400).json({ error: "error updating Person ID" + err });
+    res.json({ err, message: "here" });
   });
 
-  if (azuredUser) {
-    const { _id, email } = azuredUser;
-    add_all_mugshots_to_azure(azuredUser).then(resolved =>
-      res.json({ user: { _id, email }, message: "User successfully added" })
-    );
-  }
+  if (!noError) return;
+
+  await add_all_mugshots_to_azure(user, azurePersonId, res);
 }
 
-function add_all_mugshots_to_azure(user) {
+function add_all_mugshots_to_azure(user, azurePersonId, expressRes) {
+  console.log(user.personalPhoto, "check obj");
   return Promise.all(
     user.personalPhoto.map(path =>
-      add_mugshot_to_azure(user.azurePersonId, path)
+      add_mugshot_to_azure(azurePersonId, path, expressRes)
     )
   );
 }
 
-function add_mugshot_to_azure(personId, photo) {
+function add_mugshot_to_azure(personId, path, expressRes) {
   // add face to person
+  console.log(path);
+  const photoBinary = fs.readFileSync(`uploads\\${path}`);
+  console.log(photoBinary);
   const personAddFaceEndpoint =
     process.env.API_URL +
     `/persongroups/${personGroupId}/persons/${personId}/persistedFaces`;
-
-  return axios.post(personAddFaceEndpoint, {
+  console.log(personAddFaceEndpoint);
+  const options = {
+    url: personAddFaceEndpoint,
     headers: azureHeaders("application/octet-stream"),
-    body: "binary data here" // TODO replace stub
+    body: photoBinary
+  };
+
+  return rp(options).then(res => {
+    console.log("check add photo");
   });
 }
 
-router.post("/train", (req, res, next) => {
-  const getTrainingStatusUrl =
-    process.env.API_URL + `/persongroups/${personGroupId}/training`;
-  const startTrainingUrl =
-    process.env.API_URL + `/persongroups/${personGroupId}/train`;
-  const options = url => ({
-    url,
-    headers: {
-      "Ocp-Apim-Subscription-Key": AZURE_KEY
-    }
-  });
+router.post("/train", async (req, res, next) => {
   // train person group if not already training
-  request.get(options(getTrainingStatusUrl)).on("response", response => {
-    console.log(response);
-    const { status } = response.body;
-    if (status === "running") {
-      res.send(response.body);
-      return;
-    }
-    request.post(options(startTrainingUrl)).on("response", resp => {
-      res.send(resp.body);
-    });
-  });
+  client.personGroup.train(personGroupId);
+  let { status } = await client.personGroup.getTrainingStatus(personGroupId);
+  let response;
+  while (status === "running") {
+    response = await client.personGroup.getTrainingStatus(personGroupId);
+  }
+  res.json(response);
 });
 
 module.exports = router;
