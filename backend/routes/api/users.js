@@ -164,8 +164,7 @@ function add_mugshot_to_azure(personId, path, expressRes) {
   };
 
   return rp(options).then(res => {
-    console.log(res, "check add photo");
-    expressRes.write(res);
+    console.log("check add photo");
   });
 }
 
