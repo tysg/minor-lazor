@@ -139,14 +139,16 @@ async function add_person_to_azure(user, res, next) {
   // }
 }
 
-function add_all_mugshots_to_azure(user, azurePersonId) {
+function add_all_mugshots_to_azure(user, azurePersonId, expressRes) {
   console.log(user.personalPhoto, "check obj");
   return Promise.all(
-    user.personalPhoto.map(path => add_mugshot_to_azure(azurePersonId, path))
+    user.personalPhoto.map(path =>
+      add_mugshot_to_azure(azurePersonId, path, expressRes)
+    )
   );
 }
 
-function add_mugshot_to_azure(personId, path) {
+function add_mugshot_to_azure(personId, path, expressRes) {
   // add face to person
   console.log(path);
   const photoBinary = fs.readFileSync(`uploads\\${path}`);
@@ -154,10 +156,16 @@ function add_mugshot_to_azure(personId, path) {
   const personAddFaceEndpoint =
     process.env.API_URL +
     `/persongroups/${personGroupId}/persons/${personId}/persistedFaces`;
-
-  return axios.post(personAddFaceEndpoint, {
+  console.log(personAddFaceEndpoint);
+  const options = {
+    url: personAddFaceEndpoint,
     headers: azureHeaders("application/octet-stream"),
     body: photoBinary
+  };
+
+  return rp(options).then(res => {
+    console.log(res, "check add photo");
+    expressRes.write(res);
   });
 }
 
