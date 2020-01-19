@@ -40,8 +40,10 @@ router.post("/upload", upload, (req, res) => {
   saveImage(req.file)
     .then(result => {
       const buffer = fs.readFileSync(req.file.path);
-      return detectAndRecognizeFaces(buffer).then(faces => {
-        console.log(faces);
+      detectAndRecognizeFaces(buffer).then(faces => {
+        // trigger update user pipeline
+        // HACK: the following operation is async
+        update_all_users_event_photo(result._id, faces);
       });
     })
     .then(result => {
@@ -86,5 +88,38 @@ router.get("/myphotos/:userId", async (req, res) => {
   // Below is for zipping multiple files and sending for download
   // https://stackoverflow.com/questions/16215102/download-multiple-files-from-nodejs-server
 });
+
+function update_all_users_event_photo(photo_id, user_ids) {
+  // HACK: db update is async
+  for (user_id of user_ids) {
+    append_user_event_photos(user_id, photo_id);
+  }
+}
+
+function append_user_event_photos(user_id, photo_id) {
+  User.findOne({ _id: user_id }).exec((err, docs) => {
+    if (err) {
+      console.log(err);
+    } else {
+      return update_single_user_event_photos_field(docs, photo_id);
+    }
+  });
+}
+
+function update_single_user_event_photos_field(user, photo_id) {
+  // HACK: should use a set here
+  if (!user.eventPhotos.includes(photo_id)) {
+    user.eventPhotos.push(photo_id);
+  }
+  Users.update({ _id: user._id }, { eventPhotos: user.eventPhotos }).exec(
+    (err, docs) => {
+      if (err) {
+        console.log(err);
+      } else {
+        console.log("updated: " + user._id);
+      }
+    }
+  );
+}
 
 module.exports = router;
