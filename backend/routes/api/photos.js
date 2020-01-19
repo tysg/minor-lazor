@@ -5,15 +5,43 @@ const uploadMultiple = require("../../utils/storage").upload.array("photo", 10);
 const { Photo } = require("../../models/photo");
 const { User } = require("../../models/user");
 const fs = require("fs");
+const { FaceModels } = require("@azure/cognitiveservices-face");
+const faceClient = require("../../common/faceClient");
 
 function saveImage({ filename, path, event = "HacknRoll", originalname }) {
   return Photo.create({ filename, path, event, originalname });
+}
+
+/**
+ * Detects and recognises faces in a image stream.
+ * @param {string} path 
+ * @returns an array of user ids
+ */
+function detectAndRecognizeFaces(imageStream) {
+  const options = {
+    detectionModel: "detection_02",
+    recognitionModel: "recognition_02"
+  };
+  var faces = Promise.all(faceClient.face.detectWithStream(imageStream, options));
+
+  var faceIds = faces.map(face => face.faceId);
+  var results = Promise.all(client.face.identify(faceIds, personGroupId));
+  var topCandidates = results
+    .filter(i => i.candidates.length != 0)
+    .map(i => client.personGroupPerson.get(i[0]));
+  return topCandidates;
 }
 
 router.post("/upload", upload, (req, res) => {
   console.log(req, "upload check");
   const { mimetype, originalname } = req.file;
   saveImage(req.file)
+    .then(result => {
+      const buffer = fs.readFileSync(req.file.path);
+      detectAndRecognizeFaces(buffer).then(faces => {
+        console.log(faces);
+      });
+    })
     .then(result => {
       return res.json({ type: "success", uploaded: [originalname] });
     })

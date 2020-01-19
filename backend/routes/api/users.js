@@ -5,12 +5,6 @@ const axios = require("axios");
 const rp = promisify(require("request").post);
 const fs = require("fs");
 
-const subscriptionKey = process.env.API_KEY1;
-const azureHeaders = (content_type = "application/json") => ({
-  "Content-Type": content_type,
-  "Ocp-Apim-Subscription-Key": subscriptionKey
-});
-const personGroupId = "01";
 var { upload } = require("../../utils/storage");
 const { User } = require("../../models/user");
 
@@ -176,7 +170,7 @@ router.post("/train", (req, res, next) => {
   const options = url => ({
     url,
     headers: {
-      "Ocp-Apim-Subscription-Key": subscriptionKey
+      "Ocp-Apim-Subscription-Key": AZURE_KEY
     }
   });
   // train person group if not already training
