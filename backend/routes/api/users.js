@@ -71,12 +71,12 @@ async function add_person_to_azure(user, res, next) {
   console.log(newPersonEndpoint);
   const newPerson = await axios
     .post(newPersonEndpoint, {
-      headers: {
-        ...azureHeaders()
-      },
       body: {
         // mongo user _id
         name: user._id
+      },
+      headers: {
+        ...azureHeaders()
       }
     })
     .catch(err => {
