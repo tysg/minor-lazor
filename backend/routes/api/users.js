@@ -1,7 +1,8 @@
 var express = require("express");
 var router = express.Router();
-var request = require("request");
+const { promisify } = require("util");
 const axios = require("axios");
+const request = promisify(require("request"));
 
 const subscriptionKey = process.env.API_KEY1;
 const azureHeaders = (content_type = "application/json") => ({
@@ -69,37 +70,58 @@ async function add_person_to_azure(user, res, next) {
   const newPersonEndpoint =
     process.env.API_URL + `/persongroups/${personGroupId}/persons`;
   console.log(newPersonEndpoint);
-  const newPerson = await axios
-    .post(newPersonEndpoint, {
-      body: {
-        // mongo user _id
-        name: user._id
-      },
-      headers: {
-        ...azureHeaders()
-      }
+
+  const azuredPerson = request
+    .post(options)
+    .then(response => {
+      console.log(response);
+      const { personId } = response.body;
+      return response.body;
     })
     .catch(err => {
-      // console.log(err, "=====");
-      res.json({ message: "here", err });
+      res.send(err);
+    });
+  if (!azuredPerson) return;
+
+  User.findByIdAndUpdate(user._id, { azurePersonId: personId })
+    .then(success => {
+      return add_all_mugshots_to_azure(user, personId, res);
+    })
+    .catch(err => {
+      res.send(err);
     });
 
-  if (!newPerson) return;
+  // const newPerson = await axios
+  //   .post(newPersonEndpoint, {
+  //     body: {
+  //       // mongo user _id
+  //       name: user._id
+  //     },
+  //     headers: {
+  //       ...azureHeaders()
+  //     }
+  //   })
+  //   .catch(err => {
+  //     // console.log(err, "=====");
+  //     res.json({ message: "here", err });
+  //   });
 
-  const { personId } = newPerson.body;
+  // if (!newPerson) return;
 
-  const azuredUser = await User.findByIdAndUpdate(user.id, {
-    azurePersonId: personId
-  }).catch(err => {
-    res.status(400).json({ error: "error updating Person ID" + err });
-  });
+  // const { personId } = newPerson.body;
 
-  if (azuredUser) {
-    const { _id, email } = azuredUser;
-    add_all_mugshots_to_azure(azuredUser).then(resolved =>
-      res.json({ user: { _id, email }, message: "User successfully added" })
-    );
-  }
+  // const azuredUser = await User.findByIdAndUpdate(user.id, {
+  //   azurePersonId: personId
+  // }).catch(err => {
+  //   res.status(400).json({ error: "error updating Person ID" + err });
+  // });
+
+  // if (azuredUser) {
+  //   const { _id, email } = azuredUser;
+  //   add_all_mugshots_to_azure(azuredUser).then(resolved =>
+  //     res.json({ user: { _id, email }, message: "User successfully added" })
+  //   );
+  // }
 }
 
 function add_all_mugshots_to_azure(user) {
