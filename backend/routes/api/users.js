@@ -33,7 +33,6 @@ router.post("/upload", upload.single("photo"), upload_single_photo);
  */
 router.post("/create", create_user);
 
-
 // TODO
 /**
  * Gets the path to the photos associated with the user id.
@@ -42,16 +41,16 @@ router.post("/create", create_user);
  */
 router.get("/photos/:id", show_user);
 
-
 function show_user(req, res, next) {
   User.findById(req.params.id).exec((err, docs) => {
     if (err) {
-      res.status(400).json({ error: "error finding user id: " + req.params.id });
+      res
+        .status(400)
+        .json({ error: "error finding user id: " + req.params.id });
     } else {
       res.json(docs);
     }
-  })
-
+  });
 }
 
 function show(req, res, next) {
