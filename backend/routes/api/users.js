@@ -5,8 +5,10 @@ const axios = require("axios");
 
 var { upload } = require("../../utils/storage");
 const { User } = require("../../models/user");
+const client = require("../../common/faceClient");
 
 const imageTypes = ["image/png", "image/jpg", "image/jpeg"];
+const personGroupId = "01";
 
 router.get("/", show);
 
@@ -100,41 +102,26 @@ function add_all_mugshots_to_azure(user) {
   );
 }
 
-function add_mugshot_to_azure(personId, photo) {
+function add_mugshot_to_azure(personId, pathToMugshot) {
   // add face to person
-  const personAddFaceEndpoint =
-    process.env.API_URL +
-    `/persongroups/${personGroupId}/persons/${personId}/persistedFaces`;
 
-  return axios.post(personAddFaceEndpoint, {
-    headers: azureHeaders("application/octet-stream"),
-    body: "binary data here" // TODO replace stub
-  });
+  const imageStream = fs.readFileSync(pathToMugshot);
+  return client.personGroupPerson
+    .addFaceFromStream(personGroupId, personId, imageStream)
+    .catch(err => {
+      console.log(err);
+    });
 }
 
-router.post("/train", (req, res, next) => {
-  const getTrainingStatusUrl =
-    process.env.API_URL + `/persongroups/${personGroupId}/training`;
-  const startTrainingUrl =
-    process.env.API_URL + `/persongroups/${personGroupId}/train`;
-  const options = url => ({
-    url,
-    headers: {
-      "Ocp-Apim-Subscription-Key": AZURE_KEY
-    }
-  });
+router.post("/train", async (req, res, next) => {
   // train person group if not already training
-  request.get(options(getTrainingStatusUrl)).on("response", response => {
-    console.log(response);
-    const { status } = response.body;
-    if (status === "running") {
-      res.send(response.body);
-      return;
-    }
-    request.post(options(startTrainingUrl)).on("response", resp => {
-      res.send(resp.body);
-    });
-  });
+  client.personGroup.train(personGroupId);
+  let { status } = await client.personGroup.getTrainingStatus(personGroupId);
+  let response;
+  while (status === "running") {
+    response = await client.personGroup.getTrainingStatus(personGroupId);
+  }
+  res.json(response);
 });
 
 module.exports = router;
