@@ -14,7 +14,7 @@ var app = express();
 
 app.use(
   bodyParser.urlencoded({
-    extended: false
+    extended: true
   })
 );
 app.use(cors());
@@ -24,6 +24,13 @@ app.use(bodyParser.json());
 // Routes
 app.use("/api/users", users);
 app.use("/api/photos", photos);
+
+app.use(function(err, req, res, next) {
+  // set locals, only providing error in development
+  // res.locals.message = err.message;
+  // res.locals.error = req.app.get("env") === "development" ? err : {};
+  return res.status(err.status || 500).json(err);
+});
 
 // Connect to MongoDB
 var conn = mongoose

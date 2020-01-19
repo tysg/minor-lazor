@@ -3,15 +3,19 @@ const Schema = mongoose.Schema;
 
 // Create Schema
 const UserSchema = new Schema({
+  name: {
+    type: String,
+    required: true
+  },
   email: {
     type: String,
     required: true
   },
-  personalPhoto: {
+  azurePersonId: {
     type: String,
-    required: true
   },
-  photos: [{ type: mongoose.Schema.ObjectId, ref: "photo" }]
+  personalPhoto: [{ type: String, required: true }],
+  eventPhotos: [{ type: mongoose.Schema.ObjectId, ref: "photo" }]
 });
 
 module.exports = {
