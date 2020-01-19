@@ -3,6 +3,7 @@ var router = express.Router();
 const { promisify } = require("util");
 const axios = require("axios");
 const rp = promisify(require("request").post);
+const fs = require("fs");
 
 const subscriptionKey = process.env.API_KEY1;
 const azureHeaders = (content_type = "application/json") => ({
@@ -55,12 +56,16 @@ async function create_user(req, res, next) {
   const newUser = await User.create({
     name: req.body.name || "Branson",
     email: req.body.email || "branson@gmail.com",
-    personalPhoto:
-      req.body.mugshots ||
-      "0faf2d8f8344143e6bd9129b2d4c5082, 1b79125462345c7490952d81264f8c14"
-  }).catch(err => {
-    res.status(400).json({ error: "error creating user model: " + err });
-  });
+    personalPhoto: req.body.mugshots || [
+      "0faf2d8f8344143e6bd9129b2d4c5082",
+      "1b79125462345c7490952d81264f8c14"
+    ]
+  }).catch(
+    err => {
+      res.status(400).json({ error: "error creating user model: " + err });
+    },
+    { plain: true }
+  );
 
   if (newUser) add_person_to_azure(newUser, res, next);
 }
@@ -69,37 +74,37 @@ async function add_person_to_azure(user, res, next) {
   // add person to personGroup
   const newPersonEndpoint =
     process.env.API_URL + `/persongroups/${personGroupId}/persons`;
-  console.log(newPersonEndpoint, user._id);
 
   const options = {
     url: newPersonEndpoint,
     headers: azureHeaders(),
-    data: {
-      name: `${user._id}`,
+    body: JSON.stringify({
+      name: user._id,
       userData: "test person",
       recognitionModel: "recognition_02"
-    }
+    })
   };
 
-  const azuredPerson = rp(options)
+  const azurePersonId = await rp(options)
     .then(response => {
-      const { personId } = response.body;
-      console.log(personId);
-      return response.body;
+      const { personId } = JSON.parse(response.body);
+      return personId;
     })
     .catch(err => {
       res.send(err);
     });
 
-  if (!azuredPerson) return;
+  if (!azurePersonId) return;
 
-  User.findByIdAndUpdate(user._id, { azurePersonId: azuredPerson.personId })
-    .then(success => {
-      return add_all_mugshots_to_azure(user, personId, res);
-    })
-    .catch(err => {
-      res.send(err);
-    });
+  const noError = await User.findByIdAndUpdate(user._id, {
+    azurePersonId: azurePersonId
+  }).catch(err => {
+    res.json({ err, message: "here" });
+  });
+
+  if (!noError) return;
+
+  await add_all_mugshots_to_azure(user, azurePersonId, res);
 
   // const newPerson = await axios
   //   .post(newPersonEndpoint, {
@@ -134,23 +139,25 @@ async function add_person_to_azure(user, res, next) {
   // }
 }
 
-function add_all_mugshots_to_azure(user) {
+function add_all_mugshots_to_azure(user, azurePersonId) {
+  console.log(user.personalPhoto, "check obj");
   return Promise.all(
-    user.personalPhoto.map(path =>
-      add_mugshot_to_azure(user.azurePersonId, path)
-    )
+    user.personalPhoto.map(path => add_mugshot_to_azure(azurePersonId, path))
   );
 }
 
-function add_mugshot_to_azure(personId, photo) {
+function add_mugshot_to_azure(personId, path) {
   // add face to person
+  console.log(path);
+  const photoBinary = fs.readFileSync(`uploads\\${path}`);
+  console.log(photoBinary);
   const personAddFaceEndpoint =
     process.env.API_URL +
     `/persongroups/${personGroupId}/persons/${personId}/persistedFaces`;
 
   return axios.post(personAddFaceEndpoint, {
     headers: azureHeaders("application/octet-stream"),
-    body: "binary data here" // TODO replace stub
+    body: photoBinary
   });
 }
 
