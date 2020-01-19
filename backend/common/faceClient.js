@@ -1,13 +1,13 @@
 const { FaceClient } = require("@azure/cognitiveservices-face");
-const { CognitiveServicesCredentials } = require("@azure/ms-rest-js");
+const { CognitiveServicesCredentials } = require("ms-rest-azure");
 
 const cognitiveServicesCredentials = new CognitiveServicesCredentials(
   process.env.API_KEY1
 );
 
 const client = new FaceClient(
-  process.env.API_URL,
-  cognitiveServicesCredentials
+  cognitiveServicesCredentials,
+  process.env.API_URL
 );
 
 module.exports = client;
