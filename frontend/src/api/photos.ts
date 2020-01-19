@@ -11,7 +11,7 @@ class PhotosAPI extends BaseAPI {
   public addPhoto(photo: PhotoData): ApiPromise<{ photo: PhotoData }> {
     const fd = new FormData();
     createFormData(fd, 'photo', photo);
-    return this.post(`${this.getUrl()}`, photo, true);
+    return this.post(`${this.getUrl()}/upload`, photo, true);
   }
 
   protected getUrl() {

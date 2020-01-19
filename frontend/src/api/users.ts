@@ -11,7 +11,7 @@ class UsersAPI extends BaseAPI {
   public addUser(user: UserData): ApiPromise<{ user: UserData }> {
     const fd = new FormData();
     createFormData(fd, 'user', user);
-    return this.post(`${this.getUrl()}`, user, true);
+    return this.post(`${this.getUrl()}/create`, user, true);
   }
 
   protected getUrl() {

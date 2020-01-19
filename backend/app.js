@@ -10,14 +10,18 @@ const { users, photos } = require("./routes");
 
 var app = express();
 
-
 app.use(bodyParser.json());
 app.use(
   bodyParser.urlencoded({
     extended: true
   })
 );
-app.use(cors());
+app.use(
+  cors({
+    origin: "http://localhost:8075",
+    credentials: true
+  })
+);
 
 // Routes
 app.use("/api/users", users);
@@ -26,8 +30,7 @@ app.use("/api/photos", photos);
 // serve photos as static
 app.use("/uploads", express.static(__dirname + "/uploads"));
 
-app.use(function (err, req, res, next) {
-
+app.use(function(err, req, res, next) {
   // set locals, only providing error in development
   // res.locals.message = err.message;
   // res.locals.error = req.app.get("env") === "development" ? err : {};

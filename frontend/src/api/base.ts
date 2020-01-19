@@ -17,7 +17,7 @@ const DEFAULT_API_RESPONSE: ApiResponse<{}> = Object.freeze({
 });
 
 const client = axios.create({
-  baseURL: `${BACKEND_URL}/api/v1`,
+  baseURL: `${BACKEND_URL}/api`,
   timeout: 30_000,
   withCredentials: true
 });
