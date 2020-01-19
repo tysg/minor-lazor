@@ -14,7 +14,8 @@ const NewUserForm: React.FC<Props> = ({ history }) => {
   const dispatch = useDispatch();
 
   const values: Partial<PhotoData> = {
-    id: 0
+    id: 0,
+    file_helper: ''
   };
 
   const formMetadata: FormMetadataType<PhotoData> = {};

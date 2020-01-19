@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { Redirect, Route, RouteComponentProps, Switch, withRouter } from 'react-router-dom';
 
-import HomeIndex from 'src/modules/HomeIndex';
+import HomeIndex from 'src/modules/home/components/HomeIndex';
 import PhotoNew from 'src/modules/photos/components/NewPhotoForm';
 import UserNew from 'src/modules/users/components/NewUserForm';
 import AppMainLayout from './AppMainLayout';
