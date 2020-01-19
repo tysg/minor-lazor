@@ -14,7 +14,7 @@ function saveImage({ filename, path, event = "HacknRoll", originalname }) {
 
 /**
  * Detects and recognises faces in a image stream.
- * @param {string} path 
+ * @param {string} path
  * @returns an array of user ids
  */
 function detectAndRecognizeFaces(imageStream) {
@@ -22,7 +22,9 @@ function detectAndRecognizeFaces(imageStream) {
     detectionModel: "detection_02",
     recognitionModel: "recognition_02"
   };
-  var faces = Promise.all(faceClient.face.detectWithStream(imageStream, options));
+  var faces = Promise.all(
+    faceClient.face.detectWithStream(imageStream, options)
+  );
 
   var faceIds = faces.map(face => face.faceId);
   var results = Promise.all(client.face.identify(faceIds, personGroupId));
@@ -38,7 +40,7 @@ router.post("/upload", upload, (req, res) => {
   saveImage(req.file)
     .then(result => {
       const buffer = fs.readFileSync(req.file.path);
-      detectAndRecognizeFaces(buffer).then(faces => {
+      return detectAndRecognizeFaces(buffer).then(faces => {
         console.log(faces);
       });
     })

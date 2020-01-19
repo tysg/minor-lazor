@@ -8,10 +8,9 @@ const cors = require("cors");
 
 const { users, photos } = require("./routes");
 
-const Grid = require("gridfs-stream");
-
 var app = express();
 
+app.use(bodyParser.json());
 app.use(
   bodyParser.urlencoded({
     extended: true
@@ -19,13 +18,12 @@ app.use(
 );
 app.use(cors());
 
-app.use(bodyParser.json());
-
 // Routes
 app.use("/api/users", users);
 app.use("/api/photos", photos);
 
 app.use(function(err, req, res, next) {
+  
   // set locals, only providing error in development
   // res.locals.message = err.message;
   // res.locals.error = req.app.get("env") === "development" ? err : {};
@@ -37,14 +35,6 @@ var conn = mongoose
   .connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true })
   .then(() => console.log("MongoDB successfully connected"))
   .catch(err => console.log(err));
-
-let gfs;
-
-// mongoose.connection.once("open", () => {
-//   gfs = Grid(conn.db, mongoose.mongo);
-//   gfs.collection("uploads");
-//   console.log("Connection Successful");
-// });
 
 mongoose.set("useFindAndModify", false);
 
