@@ -31,7 +31,7 @@ router.post("/upload", upload.single("photo"), upload_single_photo);
  * POST a struct { name: string, email: string, personalPhoto: [path] }
  * On success, returns "created user: " + user.name
  */
-router.post("/create", create_user);
+router.post("/create", upload.single("photo"), create_user);
 
 function show(req, res, next) {
   res.send("respond with a resource");
@@ -49,13 +49,17 @@ function upload_single_photo(req, res, next) {
 }
 
 async function create_user(req, res, next) {
+  const { mimetype, path } = req.file;
+
+  if (!imageTypes.includes(mimetype))
+    return res
+      .status(400)
+      .json({ error: "Please send an image, unsupported file type" });
+
   const newUser = await User.create({
-    name: req.body.name || "Branson",
-    email: req.body.email || "branson@gmail.com",
-    personalPhoto: req.body.mugshots || [
-      "0faf2d8f8344143e6bd9129b2d4c5082",
-      "1b79125462345c7490952d81264f8c14"
-    ]
+    name: req.body.name,
+    email: req.body.email,
+    personalPhoto: [path]
   }).catch(
     err => {
       res.status(400).json({ error: "error creating user model: " + err });
