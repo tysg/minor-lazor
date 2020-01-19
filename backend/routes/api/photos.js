@@ -12,13 +12,24 @@ function saveImage({ filename, path, event = "HacknRoll", originalname }) {
   return Photo.create({ filename, path, event, originalname });
 }
 
-// return detectFace Promise
-function detectFaces(imageStream) {
+/**
+ * Detects and recognises faces in a image stream.
+ * @param {string} path 
+ * @returns an array of user ids
+ */
+function detectAndRecognizeFaces(imageStream) {
   const options = {
     detectionModel: "detection_02",
     recognitionModel: "recognition_02"
   };
-  return faceClient.face.detectWithStream(imageStream, options);
+  var faces = Promise.all(faceClient.face.detectWithStream(imageStream, options));
+
+  var faceIds = faces.map(face => face.faceId);
+  var results = Promise.all(client.face.identify(faceIds, personGroupId));
+  var topCandidates = results
+    .filter(i => i.candidates.length != 0)
+    .map(i => client.personGroupPerson.get(i[0]));
+  return topCandidates;
 }
 
 router.post("/upload", upload, (req, res) => {
@@ -27,8 +38,7 @@ router.post("/upload", upload, (req, res) => {
   saveImage(req.file)
     .then(result => {
       const buffer = fs.readFileSync(req.file.path);
-      detectFaces(buffer).then(faces => {
-        // TODO: match teh return data to user in mongo
+      detectAndRecognizeFaces(buffer).then(faces => {
         console.log(faces);
       });
     })
